@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SocioAgency — Daily Sales, Spend & Orders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #12131C;
+    --page: #F3F2FA;
+    --card: #FFFFFF;
+    --violet: #6C4FF6;
+    --lime: #22C97E;
+    --coral: #FF6357;
+    --amber: #FFA412;
+    --amber-deep: #C97600;
+    --slate: #6E7391;
+    --slate-light: #A5A9C0;
+    --line: #E7E5F3;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px 60px; }
+
+  /* Header */
+  .topbar { background: var(--ink); padding: 28px 20px 60px; margin-bottom: -40px; }
+  .topbar-inner { max-width: 680px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+
+  .logo-mark {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--violet), var(--lime));
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .logo-mark svg { width: 20px; height: 20px; }
+
+  .brand { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 20px; color: #fff; letter-spacing: -0.3px; }
+  .brand-tag { font-size: 12px; color: var(--slate-light); margin-top: 1px; }
+
+  /* Pending orders - highlighted section */
+  .pending-block {
+    background: #FFF8EA;
+    border: 1.5px solid #FFDE9E;
+    border-radius: 18px;
+    padding: 18px 18px 6px;
+    margin-bottom: 26px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .pending-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .pending-title-row { display: flex; align-items: center; gap: 8px; }
+
+  .pending-title {
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--amber-deep);
+  }
+
+  .pending-count {
+    background: var(--amber);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 20px;
+  }
+
+  .add-order-btn {
+    border: none;
+    background: var(--amber);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .order-form {
+    display: none;
+    background: #fff;
+    border: 1px solid #FFDE9E;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .order-form.open { display: block; }
+
+  .order-form input, .order-form textarea {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 10px 11px;
+    border-radius: 9px;
+    border: 1.5px solid var(--line);
+    background: #FBFAFF;
+    color: var(--ink);
+    outline: none;
+    margin-bottom: 10px;
+  }
+  .order-form input:focus, .order-form textarea:focus { border-color: var(--amber); }
+  .order-form textarea { resize: vertical; min-height: 54px; font-family: 'Inter', sans-serif; }
+
+  .order-row {
+    background: #fff;
+    border: 1px solid #FFDE9E;
+    border-left: 4px solid var(--amber);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  .order-row-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .order-client { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 14px; }
+  .order-due { font-size: 12px; color: var(--amber-deep); font-weight: 600; margin-top: 2px; }
+  .order-detail { font-size: 13px; color: var(--slate); margin-top: 6px; line-height: 1.5; }
+
+  .order-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .deliver-btn {
+    border: none; background: var(--lime); color: #fff; font-size: 12px; font-weight: 700;
+    padding: 6px 12px; border-radius: 7px; cursor: pointer;
+  }
+  .del-order-btn {
+    border: 1.5px solid var(--line); background: transparent; color: var(--slate);
+    font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 7px; cursor: pointer;
+  }
+
+  .pending-empty { color: var(--amber-deep); font-size: 13px; padding: 4px 0 14px; }
+
+  /* Summary */
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+  .stat-card { background: var(--card); border-radius: 16px; padding: 16px 12px; box-shadow: 0 12px 24px -12px rgba(18,19,28,0.18); }
+  .stat-label { font-size: 11px; color: var(--slate); font-weight: 600; margin-bottom: 6px; }
+  .stat-value { font-family: 'Sora', sans-serif; font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat-value.up { color: var(--lime); }
+  .stat-value.down { color: var(--coral); }
+
+  .section-title { font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; margin: 0 0 12px; color: var(--ink); }
+
+  /* Form card */
+  .form-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 24px; }
+  .toggle-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .toggle-btn {
+    flex: 1; padding: 10px; border-radius: 10px; border: 1.5px solid var(--line);
+    background: transparent; color: var(--slate); font-family: 'Inter', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .toggle-btn.active-sale { background: var(--lime); border-color: var(--lime); color: #fff; }
+  .toggle-btn.active-expense { background: var(--coral); border-color: var(--coral); color: #fff; }
+
+  .field-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  input[type="number"], input[type="date"], input[type="text"] {
+    font-family: 'Inter', sans-serif; font-size: 14px; padding: 11px 12px; border-radius: 10px;
+    border: 1.5px solid var(--line); background: #FBFAFF; color: var(--ink); outline: none;
+  }
+  input:focus { border-color: var(--violet); }
+  .field-row input { flex: 1 1 130px; min-width: 0; }
+  .full-input { width: 100%; margin-bottom: 14px; }
+
+  .submit-btn {
+    width: 100%; padding: 13px; border-radius: 10px; border: none; color: #fff;
+    font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .submit-btn.sale-bg { background: var(--lime); }
+  .submit-btn.expense-bg { background: var(--coral); }
+  .form-error { color: var(--coral); font-size: 13px; margin: 0 0 10px; }
+
+  /* Bulk import */
+  .import-block { background: var(--card); border: 1px dashed var(--line); border-radius: 18px; padding: 18px 20px; margin-bottom: 28px; }
+  .import-toggle { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .import-toggle .section-title { margin: 0; }
+  .import-chevron { color: var(--slate); font-size: 13px; }
+  .import-body { display: none; margin-top: 14px; }
+  .import-body.open { display: block; }
+  .import-help { font-size: 12.5px; color: var(--slate); line-height: 1.6; margin-bottom: 10px; }
+  .import-help code { background: #F1EFFB; padding: 1px 5px; border-radius: 4px; }
+  textarea#bulk-input {
+    width: 100%; min-height: 110px; font-family: 'Inter', sans-serif; font-size: 13.5px;
+    padding: 12px; border-radius: 10px; border: 1.5px solid var(--line); background: #FBFAFF;
+    color: var(--ink); outline: none; resize: vertical; margin-bottom: 10px;
+  }
+  textarea#bulk-input:focus { border-color: var(--violet); }
+  .import-btn { border: none; background: var(--violet); color: #fff; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 14px; padding: 11px 16px; border-radius: 10px; cursor: pointer; }
+  .import-result { font-size: 13px; margin-top: 10px; }
+  .import-result.ok { color: var(--lime); }
+  .import-result.err { color: var(--coral); }
+
+  /* Calendar / history */
+  .calendar-block { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 28px; }
+  .calendar-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .calendar-nav-btn {
+    border: 1.5px solid var(--line); background: transparent; border-radius: 8px;
+    width: 32px; height: 32px; cursor: pointer; font-size: 15px; color: var(--ink);
+  }
+  .calendar-month-label { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 15px; }
+  .calendar-dow-row, .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .calendar-dow { text-align: center; font-size: 11px; color: var(--slate); font-weight: 600; padding-bottom: 8px; }
+  .calendar-cell {
+    min-height: 52px; border-radius: 8px; padding: 4px 2px; border: 1.5px solid transparent;
+    text-align: center; cursor: pointer;
+  }
+  .calendar-cell.empty { cursor: default; }
+  .calendar-cell.today { border-color: var(--violet); }
+  .calendar-cell.selected { background: #F1EFFB; border-color: var(--violet); }
+  .calendar-date-num { font-size: 12px; font-weight: 600; }
+  .calendar-amt { font-size: 9px; font-weight: 700; line-height: 1.35; font-variant-numeric: tabular-nums; }
+  .calendar-amt.up { color: var(--lime); }
+  .calendar-amt.down { color: var(--coral); }
+
+  .period-label { font-size: 12px; color: var(--slate); font-weight: 600; margin: 18px 0 8px; }
+  .period-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .mini-stat { background: var(--page); border-radius: 12px; padding: 10px 8px; text-align: center; }
+  .mini-stat .stat-label { margin-bottom: 3px; }
+  .mini-stat .stat-value { font-size: 15px; }
+
+  .day-detail { display: none; margin-top: 18px; border-top: 1px dashed var(--line); padding-top: 14px; }
+  .day-detail-head { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 10px; }
+
+  /* Ledger */
+  .day-group { margin-bottom: 22px; }
+  .day-header { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 6px; margin-bottom: 10px; border-bottom: 1.5px solid var(--line); }
+  .day-label { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 15px; }
+  .day-total { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .entry-row {
+    display: flex; align-items: center; justify-content: space-between; background: var(--card);
+    border: 1px solid var(--line); border-left: 4px solid var(--lime); border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 8px;
+  }
+  .entry-row.expense { border-left-color: var(--coral); }
+  .entry-note { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .entry-right { display: flex; align-items: center; gap: 12px; }
+  .entry-amount { font-family: 'Sora', sans-serif; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .entry-amount.up { color: var(--lime); }
+  .entry-amount.down { color: var(--coral); }
+  .del-btn { border: none; background: transparent; color: var(--slate-light); font-size: 20px; line-height: 1; cursor: pointer; padding: 2px 4px; }
+  .del-btn:hover { color: var(--coral); }
+
+  .empty-state { text-align: center; color: var(--slate); padding: 40px 20px; font-size: 14px; }
+  .footer-note { text-align: center; color: var(--slate-light); font-size: 12px; margin-top: 30px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M4 17L10 11L14 15L20 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 7H20V12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand">SocioAgency</div>
+      <div class="brand-tag">Sales, spend and orders — all in one place</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Pending Orders -->
+  <div class="pending-block">
+    <div class="pending-head">
+      <div class="pending-title-row">
+        <span class="pending-title">Pending Orders</span>
+        <span class="pending-count" id="pending-count">0</span>
+      </div>
+      <button class="add-order-btn" onclick="toggleOrderForm()">+ Add order</button>
+    </div>
+
+    <div class="order-form" id="order-form">
+      <input type="text" id="order-client" placeholder="Client / order name">
+      <textarea id="order-detail" placeholder="Details (e.g. 2 reels + 5 posts, Instagram page setup)"></textarea>
+      <input type="date" id="order-due">
+      <p class="form-error" id="order-error" style="display:none;"></p>
+      <button class="submit-btn" style="background: var(--amber);" onclick="addOrder()">Add order</button>
+    </div>
+
+    <div id="orders-list"></div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary" id="summary"></div>
+
+  <!-- Add entry -->
+  <div class="form-card">
+    <div class="section-title">Add new entry</div>
+    <div class="toggle-row">
+      <button class="toggle-btn" id="btn-sale" onclick="setType('sale')">Sale</button>
+      <button class="toggle-btn" id="btn-expense" onclick="setType('expense')">Expense</button>
+    </div>
+    <div class="field-row">
+      <input type="number" inputmode="decimal" id="amount" placeholder="Amount (₹)">
+      <input type="date" id="date">
+    </div>
+    <input type="text" class="full-input" id="note" placeholder="Note (e.g. Instagram ad sale, Facebook ad spend)">
+    <p class="form-error" id="form-error" style="display:none;"></p>
+    <button class="submit-btn" id="submit-btn" onclick="addEntry()">Add</button>
+  </div>
+
+  <!-- Calendar / history -->
+  <div class="calendar-block">
+    <div class="section-title">History</div>
+    <div class="calendar-nav">
+      <button class="calendar-nav-btn" onclick="changeMonth(-1)" aria-label="Previous month">‹</button>
+      <span class="calendar-month-label" id="calendar-month-label"></span>
+      <button class="calendar-nav-btn" onclick="changeMonth(1)" aria-label="Next month">›</button>
+    </div>
+    <div class="calendar-dow-row">
+      <div class="calendar-dow">Su</div>
+      <div class="calendar-dow">Mo</div>
+      <div class="calendar-dow">Tu</div>
+      <div class="calendar-dow">We</div>
+      <div class="calendar-dow">Th</div>
+      <div class="calendar-dow">Fr</div>
+      <div class="calendar-dow">Sa</div>
+    </div>
+    <div class="calendar-grid" id="calendar-grid-days"></div>
+
+    <div class="day-detail" id="day-detail"></div>
+
+    <div class="period-label">This month</div>
+    <div class="period-summary">
+      <div class="mini-stat">
+        <div class="stat-label">Sales</div>
+        <div class="stat-value up" id="month-sales">₹0</div>
+      </div>
+      <div class="mini-stat">
+        <div class="stat-label">Expenses</div>
+        <div class="stat-value down" id="month-expenses">₹0</div>
+      </div>
+      <div class="mini-stat">
+        <div class="stat-label">Net</div>
+        <div class="stat-value" id="month-net">₹0</div>
+      </div>
+    </div>
+
+    <div class="period-label">This year (<span id="year-label"></span>)</div>
+    <div class="period-summary">
+      <div class="mini-stat">
+        <div class="stat-label">Sales</div>
+        <div class="stat-value up" id="year-sales">₹0</div>
+      </div>
+      <div class="mini-stat">
+        <div class="stat-label">Expenses</div>
+        <div class="stat-value down" id="year-expenses">₹0</div>
+      </div>
+      <div class="mini-stat">
+        <div class="stat-label">Net</div>
+        <div class="stat-value" id="year-net">₹0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk import old data -->
+  <div class="import-block">
+    <div class="import-toggle" onclick="toggleImport()">
+      <div class="section-title">Import old data (from notes)</div>
+      <span class="import-chevron" id="import-chevron">▼</span>
+    </div>
+    <div class="import-body" id="import-body">
+      <p class="import-help">
+        Paste your notes data here, one entry per line. Format:<br>
+        <code>date, note, profit amount</code><br>
+        Example: <code>12/08/2026, Instagram order Rahul, 1200</code><br>
+        Use the <code>DD/MM/YYYY</code> date format. Profit will be added as a sale.
+      </p>
+      <textarea id="bulk-input" placeholder="12/08/2026, Instagram order Rahul, 1200&#10;15/08/2026, Facebook page setup, 800"></textarea>
+      <button class="import-btn" onclick="bulkImport()">Add all</button>
+      <div class="import-result" id="import-result"></div>
+    </div>
+  </div>
+
+  <div class="section-title">Ledger</div>
+  <div id="ledger"></div>
+
+  <div class="footer-note">Your data is saved in this browser only</div>
+
+</div>
+
+<script>
+  const seedEntries = [
+    { date: '2020-03-01', type: 'sale', amount: 18000, note: 'Monthly sales - March 2020' },
+    { date: '2020-04-01', type: 'sale', amount: 46700, note: 'Monthly sales - April 2020' },
+    { date: '2020-05-01', type: 'sale', amount: 69400, note: 'Monthly sales - May 2020' },
+    { date: '2020-06-01', type: 'sale', amount: 119000, note: 'Monthly sales - June 2020' },
+    { date: '2020-07-01', type: 'sale', amount: 92500, note: 'Monthly sales - July 2020' },
+    { date: '2020-08-01', type: 'sale', amount: 108000, note: 'Monthly sales - August 2020' },
+    { date: '2020-09-01', type: 'sale', amount: 101090, note: 'Monthly sales - September 2020' },
+    { date: '2020-10-01', type: 'sale', amount: 71950, note: 'Monthly sales - October 2020' },
+    { date: '2020-11-01', type: 'sale', amount: 62870, note: 'Monthly sales - November 2020' },
+    { date: '2020-12-01', type: 'sale', amount: 71210, note: 'Monthly sales - December 2020' },
+    { date: '2021-01-01', type: 'sale', amount: 91700, note: 'Monthly sales - January 2021' },
+    { date: '2021-02-01', type: 'sale', amount: 135950, note: 'Monthly sales - February 2021' },
+    { date: '2021-03-01', type: 'sale', amount: 157000, note: 'Monthly sales - March 2021' },
+    { date: '2021-04-01', type: 'sale', amount: 174980, note: 'Monthly sales - April 2021' },
+    { date: '2021-05-01', type: 'sale', amount: 187500, note: 'Monthly sales - May 2021' },
+    { date: '2021-06-01', type: 'sale', amount: 162980, note: 'Monthly sales - June 2021' },
+    { date: '2021-07-01', type: 'sale', amount: 138920, note: 'Monthly sales - July 2021' },
+    { date: '2021-08-01', type: 'sale', amount: 141700, note: 'Monthly sales - August 2021' },
+    { date: '2021-09-01', type: 'sale', amount: 136000, note: 'Monthly sales - September 2021' },
+    { date: '2021-10-01', type: 'sale', amount: 100530, note: 'Monthly sales - October 2021' },
+    { date: '2021-11-01', type: 'sale', amount: 119000, note: 'Monthly sales - November 2021' },
+    { date: '2021-12-01', type: 'sale', amount: 128700, note: 'Monthly sales - December 2021' },
+    { date: '2022-01-01', type: 'sale', amount: 135300, note: 'Monthly sales - January 2022' },
+    { date: '2022-02-01', type: 'sale', amount: 75280, note: 'Monthly sales - February 2022' },
+    { date: '2022-03-01', type: 'sale', amount: 76110, note: 'Monthly sales - March 2022' },
+    { date: '2022-04-01', type: 'sale', amount: 80810, note: 'Monthly sales - April 2022' },
+    { date: '2022-05-01', type: 'sale', amount: 88000, note: 'Monthly sales - May 2022' },
+    { date: '2022-06-01', type: 'sale', amount: 128500, note: 'Monthly sales - June 2022' },
+    { date: '2022-07-01', type: 'sale', amount: 169000, note: 'Monthly sales - July 2022' },
+    { date: '2022-08-01', type: 'sale', amount: 168000, note: 'Monthly sales - August 2022' },
+    { date: '2022-09-01', type: 'sale', amount: 192600, note: 'Monthly sales - September 2022' },
+    { date: '2022-10-01', type: 'sale', amount: 123700, note: 'Monthly sales - October 2022' },
+    { date: '2022-11-01', type: 'sale', amount: 93000, note: 'Monthly sales - November 2022' },
+    { date: '2022-12-01', type: 'sale', amount: 71000, note: 'Monthly sales - December 2022' },
+    { date: '2023-01-01', type: 'sale', amount: 121000, note: 'Monthly sales - January 2023' },
+    { date: '2023-02-01', type: 'sale', amount: 74600, note: 'Monthly sales - February 2023' },
+    { date: '2023-03-01', type: 'sale', amount: 80000, note: 'Monthly sales - March 2023' },
+    { date: '2023-04-01', type: 'sale', amount: 77500, note: 'Monthly sales - April 2023' },
+    { date: '2023-05-01', type: 'sale', amount: 67000, note: 'Monthly sales - May 2023' },
+    { date: '2023-06-01', type: 'sale', amount: 68000, note: 'Monthly sales - June 2023' },
+    { date: '2023-07-01', type: 'sale', amount: 63000, note: 'Monthly sales - July 2023' },
+    { date: '2023-08-01', type: 'sale', amount: 62000, note: 'Monthly sales - August 2023' },
+    { date: '2023-09-01', type: 'sale', amount: 72000, note: 'Monthly sales - September 2023' },
+    { date: '2023-10-01', type: 'sale', amount: 50000, note: 'Monthly sales - October 2023' },
+    { date: '2023-11-01', type: 'sale', amount: 44570, note: 'Monthly sales - November 2023' },
+    { date: '2023-12-01', type: 'sale', amount: 62000, note: 'Monthly sales - December 2023' },
+    { date: '2024-01-01', type: 'sale', amount: 70780, note: 'Monthly sales - January 2024' },
+    { date: '2024-02-01', type: 'sale', amount: 62000, note: 'Monthly sales - February 2024' },
+    { date: '2024-03-01', type: 'sale', amount: 40270, note: 'Monthly sales - March 2024' },
+    { date: '2024-04-01', type: 'sale', amount: 64200, note: 'Monthly sales - April 2024' },
+    { date: '2024-05-01', type: 'sale', amount: 53000, note: 'Monthly sales - May 2024' },
+    { date: '2024-06-01', type: 'sale', amount: 65800, note: 'Monthly sales - June 2024' },
+    { date: '2024-07-01', type: 'sale', amount: 40000, note: 'Monthly sales - July 2024' },
+    { date: '2024-08-01', type: 'sale', amount: 85000, note: 'Monthly sales - August 2024' },
+    { date: '2024-09-01', type: 'sale', amount: 32500, note: 'Monthly sales - September 2024' },
+    { date: '2024-10-01', type: 'sale', amount: 46500, note: 'Monthly sales - October 2024' },
+    { date: '2024-11-01', type: 'sale', amount: 39000, note: 'Monthly sales - November 2024' },
+    { date: '2024-12-01', type: 'sale', amount: 51000, note: 'Monthly sales - December 2024' },
+    { date: '2025-01-01', type: 'sale', amount: 35600, note: 'Monthly sales - January 2025' },
+    { date: '2025-02-01', type: 'sale', amount: 37400, note: 'Monthly sales - February 2025' },
+    { date: '2025-03-01', type: 'sale', amount: 58000, note: 'Monthly sales - March 2025' },
+    { date: '2025-04-01', type: 'sale', amount: 45000, note: 'Monthly sales - April 2025' },
+    { date: '2025-05-01', type: 'sale', amount: 55600, note: 'Monthly sales - May 2025' },
+    { date: '2025-06-01', type: 'sale', amount: 47000, note: 'Monthly sales - June 2025' },
+    { date: '2025-07-01', type: 'sale', amount: 76000, note: 'Monthly sales - July 2025' },
+    { date: '2025-08-01', type: 'sale', amount: 37500, note: 'Monthly sales - August 2025' },
+    { date: '2025-09-01', type: 'sale', amount: 62000, note: 'Monthly sales - September 2025' },
+    { date: '2025-10-01', type: 'sale', amount: 114200, note: 'Monthly sales - October 2025' },
+    { date: '2025-11-01', type: 'sale', amount: 210000, note: 'Monthly sales - November 2025' },
+    { date: '2025-12-01', type: 'sale', amount: 310000, note: 'Monthly sales - December 2025' },
+    { date: '2026-01-01', type: 'sale', amount: 300000, note: 'Monthly sales - January 2026' },
+    { date: '2026-02-01', type: 'sale', amount: 310000, note: 'Monthly sales - February 2026' },
+    { date: '2026-03-01', type: 'sale', amount: 316000, note: 'Monthly sales - March 2026' },
+    { date: '2026-04-01', type: 'sale', amount: 275000, note: 'Monthly sales - April 2026' },
+    { date: '2026-05-01', type: 'sale', amount: 145000, note: 'Monthly sales - May 2026' },
+    { date: '2026-06-01', type: 'sale', amount: 280000, note: 'Monthly sales - June 2026' },
+    { date: '2026-07-01', type: 'sale', amount: 378000, note: 'Monthly sales - July 2026' },
+    { date: '2026-08-01', type: 'sale', amount: 440000, note: 'Monthly sales - August 2026' }
+  ];
+
+  let entries = JSON.parse(localStorage.getItem('socioagency-entries') || '[]');
+
+  // Automatically add any historical month that isn't already in the ledger
+  seedEntries.forEach(se => {
+    const alreadyExists = entries.some(e => e.date === se.date && e.note === se.note && e.amount === se.amount);
+    if (!alreadyExists) {
+      entries.push({
+        id: 'seed-' + se.date + '-' + Math.random().toString(36).slice(2, 6),
+        type: se.type,
+        amount: se.amount,
+        note: se.note,
+        date: se.date
+      });
+    }
+  });
+  localStorage.setItem('socioagency-entries', JSON.stringify(entries));
+
+  let orders = JSON.parse(localStorage.getItem('socioagency-orders') || '[]');
+  let currentType = 'sale';
+
+  const now = new Date();
+  let calYear = now.getFullYear();
+  let calMonth = now.getMonth();
+  let selectedDay = null;
+
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+  document.getElementById('date').value = todayStr();
+  document.getElementById('date').max = todayStr();
+
+  function setType(t) {
+    currentType = t;
+    document.getElementById('btn-sale').className = 'toggle-btn' + (t === 'sale' ? ' active-sale' : '');
+    document.getElementById('btn-expense').className = 'toggle-btn' + (t === 'expense' ? ' active-expense' : '');
+    document.getElementById('submit-btn').className = 'submit-btn ' + (t === 'sale' ? 'sale-bg' : 'expense-bg');
+  }
+  setType('sale');
+
+  function toggleOrderForm() {
+    document.getElementById('order-form').classList.toggle('open');
+  }
+
+  function toggleImport() {
+    document.getElementById('import-body').classList.toggle('open');
+    const chevron = document.getElementById('import-chevron');
+    chevron.textContent = document.getElementById('import-body').classList.contains('open') ? '▲' : '▼';
+  }
+
+  function formatINR(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+
+  function formatDateLabel(iso) {
+    const d = new Date(iso + 'T00:00:00');
+    const today = new Date(); today.setHours(0,0,0,0);
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    if (d.getTime() === today.getTime()) return 'Today';
+    if (d.getTime() === yesterday.getTime()) return 'Yesterday';
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: d.getFullYear() !== today.getFullYear() ? 'numeric' : undefined });
+  }
+
+  function formatDDMMYYYY(iso) {
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function saveEntries() { localStorage.setItem('socioagency-entries', JSON.stringify(entries)); }
+  function saveOrders() { localStorage.setItem('socioagency-orders', JSON.stringify(orders)); }
+
+  function addEntry() {
+    const amountInput = document.getElementById('amount');
+    const dateInput = document.getElementById('date');
+    const noteInput = document.getElementById('note');
+    const errorEl = document.getElementById('form-error');
+
+    const amount = parseFloat(amountInput.value);
+    if (!amountInput.value || isNaN(amount) || amount <= 0) {
+      errorEl.textContent = 'Enter a valid amount'; errorEl.style.display = 'block'; return;
+    }
+    if (!dateInput.value) {
+      errorEl.textContent = 'Select a date'; errorEl.style.display = 'block'; return;
+    }
+    errorEl.style.display = 'none';
+
+    entries.unshift({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      type: currentType, amount: amount, note: noteInput.value.trim(), date: dateInput.value
+    });
+
+    saveEntries();
+    amountInput.value = ''; noteInput.value = '';
+    render();
+  }
+
+  function deleteEntry(id) {
+    entries = entries.filter(e => e.id !== id);
+    saveEntries();
+    render();
+  }
+
+  function addOrder() {
+    const clientInput = document.getElementById('order-client');
+    const detailInput = document.getElementById('order-detail');
+    const dueInput = document.getElementById('order-due');
+    const errorEl = document.getElementById('order-error');
+
+    if (!clientInput.value.trim()) {
+      errorEl.textContent = 'Enter a client / order name'; errorEl.style.display = 'block'; return;
+    }
+    errorEl.style.display = 'none';
+
+    orders.unshift({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      client: clientInput.value.trim(),
+      detail: detailInput.value.trim(),
+      due: dueInput.value || ''
+    });
+
+    saveOrders();
+    clientInput.value = ''; detailInput.value = ''; dueInput.value = '';
+    document.getElementById('order-form').classList.remove('open');
+    render();
+  }
+
+  function deliverOrder(id) {
+    orders = orders.filter(o => o.id !== id);
+    saveOrders();
+    render();
+  }
+
+  function deleteOrder(id) {
+    orders = orders.filter(o => o.id !== id);
+    saveOrders();
+    render();
+  }
+
+  function bulkImport() {
+    const raw = document.getElementById('bulk-input').value;
+    const resultEl = document.getElementById('import-result');
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+    if (lines.length === 0) {
+      resultEl.textContent = 'No data found to import.';
+      resultEl.className = 'import-result err';
+      return;
+    }
+
+    let added = 0;
+    let failed = [];
+
+    lines.forEach((line, idx) => {
+      const parts = line.split(',').map(p => p.trim());
+      if (parts.length < 3) { failed.push(idx + 1); return; }
+
+      const dateRaw = parts[0];
+      const amountRaw = parts[parts.length - 1];
+      const note = parts.slice(1, parts.length - 1).join(', ');
+
+      const dateMatch = dateRaw.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+      if (!dateMatch) { failed.push(idx + 1); return; }
+      const [, dd, mm, yyyy] = dateMatch;
+      const isoDate = `${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`;
+
+      const amount = parseFloat(amountRaw.replace(/[^\d.]/g, ''));
+      if (isNaN(amount) || amount <= 0) { failed.push(idx + 1); return; }
+
+      entries.unshift({
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + idx,
+        type: 'sale',
+        amount: amount,
+        note: note || 'Old data',
+        date: isoDate
+      });
+      added++;
+    });
+
+    saveEntries();
+    render();
+
+    if (added > 0) {
+      document.getElementById('bulk-input').value = '';
+    }
+
+    if (failed.length === 0) {
+      resultEl.textContent = `${added} entries added.`;
+      resultEl.className = 'import-result ok';
+    } else {
+      resultEl.textContent = `${added} entries added. Line ${failed.join(', ')} could not be read — please check the format.`;
+      resultEl.className = 'import-result err';
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function changeMonth(delta) {
+    calMonth += delta;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    selectedDay = null;
+    renderCalendar();
+  }
+
+  function selectDay(iso) {
+    selectedDay = (selectedDay === iso) ? null : iso;
+    renderCalendar();
+  }
+
+  function formatCompact(n) {
+    const rounded = Math.round(n);
+    if (rounded >= 1000) {
+      const k = rounded / 1000;
+      return (Number.isInteger(k) ? k : k.toFixed(1)) + 'k';
+    }
+    return rounded.toString();
+  }
+
+  function renderCalendar() {
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('calendar-month-label').textContent = `${monthNames[calMonth]} ${calYear}`;
+    document.getElementById('year-label').textContent = calYear;
+
+    const firstDayOfWeek = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const todayIso = todayStr();
+
+    const dayMap = {};
+    entries.forEach(e => {
+      const d = new Date(e.date + 'T00:00:00');
+      if (d.getFullYear() === calYear && d.getMonth() === calMonth) {
+        if (!dayMap[e.date]) dayMap[e.date] = { sale: 0, expense: 0 };
+        dayMap[e.date][e.type] += e.amount;
+      }
+    });
+
+    let cellsHtml = '';
+    for (let i = 0; i < firstDayOfWeek; i++) cellsHtml += '<div class="calendar-cell empty"></div>';
+    for (let day = 1; day <= daysInMonth; day++) {
+      const iso = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const data = dayMap[iso];
+      let cls = 'calendar-cell';
+      if (iso === todayIso) cls += ' today';
+      if (iso === selectedDay) cls += ' selected';
+      cellsHtml += `
+        <div class="${cls}" onclick="selectDay('${iso}')">
+          <div class="calendar-date-num">${day}</div>
+          ${data && data.sale ? `<div class="calendar-amt up">+${formatCompact(data.sale)}</div>` : ''}
+          ${data && data.expense ? `<div class="calendar-amt down">-${formatCompact(data.expense)}</div>` : ''}
+        </div>
+      `;
+    }
+    document.getElementById('calendar-grid-days').innerHTML = cellsHtml;
+
+    let monthSales = 0, monthExpenses = 0;
+    let yearSales = 0, yearExpenses = 0;
+    entries.forEach(e => {
+      const d = new Date(e.date + 'T00:00:00');
+      if (d.getFullYear() === calYear) {
+        if (e.type === 'sale') yearSales += e.amount; else yearExpenses += e.amount;
+        if (d.getMonth() === calMonth) {
+          if (e.type === 'sale') monthSales += e.amount; else monthExpenses += e.amount;
+        }
+      }
+    });
+
+    document.getElementById('month-sales').textContent = formatINR(monthSales);
+    document.getElementById('month-expenses').textContent = formatINR(monthExpenses);
+    const monthNetEl = document.getElementById('month-net');
+    monthNetEl.textContent = formatINR(monthSales - monthExpenses);
+    monthNetEl.className = 'stat-value ' + (monthSales - monthExpenses >= 0 ? 'up' : 'down');
+
+    document.getElementById('year-sales').textContent = formatINR(yearSales);
+    document.getElementById('year-expenses').textContent = formatINR(yearExpenses);
+    const yearNetEl = document.getElementById('year-net');
+    yearNetEl.textContent = formatINR(yearSales - yearExpenses);
+    yearNetEl.className = 'stat-value ' + (yearSales - yearExpenses >= 0 ? 'up' : 'down');
+
+    const detailEl = document.getElementById('day-detail');
+    if (selectedDay) {
+      const dayEntries = entries.filter(e => e.date === selectedDay);
+      detailEl.style.display = 'block';
+      const label = new Date(selectedDay + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+      if (dayEntries.length === 0) {
+        detailEl.innerHTML = `<div class="day-detail-head">${label}</div><div class="empty-state" style="padding:12px 0;">No entries on this day.</div>`;
+      } else {
+        const rows = dayEntries.map(e => `
+          <div class="entry-row ${e.type === 'expense' ? 'expense' : ''}">
+            <div class="entry-note">${escapeHtml(e.note || (e.type === 'sale' ? 'Sale' : 'Expense'))}</div>
+            <div class="entry-right">
+              <span class="entry-amount ${e.type === 'sale' ? 'up' : 'down'}">${e.type === 'sale' ? '+' : '-'}${formatINR(e.amount)}</span>
+            </div>
+          </div>
+        `).join('');
+        detailEl.innerHTML = `<div class="day-detail-head">${label}</div>${rows}`;
+      }
+    } else {
+      detailEl.style.display = 'none';
+      detailEl.innerHTML = '';
+    }
+  }
+
+  function render() {
+    renderCalendar();
+    // Pending orders
+    document.getElementById('pending-count').textContent = orders.length;
+    const ordersListEl = document.getElementById('orders-list');
+    if (orders.length === 0) {
+      ordersListEl.innerHTML = '<div class="pending-empty">No pending orders — everything is delivered.</div>';
+    } else {
+      ordersListEl.innerHTML = orders.map(o => `
+        <div class="order-row">
+          <div class="order-row-top">
+            <div>
+              <div class="order-client">${escapeHtml(o.client)}</div>
+              ${o.due ? `<div class="order-due">Deliver by: ${formatDDMMYYYY(o.due)}</div>` : ''}
+            </div>
+          </div>
+          ${o.detail ? `<div class="order-detail">${escapeHtml(o.detail)}</div>` : ''}
+          <div class="order-actions">
+            <button class="deliver-btn" onclick="deliverOrder('${o.id}')">Delivered</button>
+            <button class="del-order-btn" onclick="deleteOrder('${o.id}')">Remove</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Summary
+    const today = todayStr();
+    const todayEntries = entries.filter(e => e.date === today);
+    const todaySales = todayEntries.filter(e => e.type === 'sale').reduce((s, e) => s + e.amount, 0);
+    const todayExpenses = todayEntries.filter(e => e.type === 'expense').reduce((s, e) => s + e.amount, 0);
+    const todayNet = todaySales - todayExpenses;
+
+    document.getElementById('summary').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-label">Sales (Today)</div>
+        <div class="stat-value up">${formatINR(todaySales)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Expenses (Today)</div>
+        <div class="stat-value down">${formatINR(todayExpenses)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Net (Today)</div>
+        <div class="stat-value ${todayNet >= 0 ? 'up' : 'down'}">${formatINR(todayNet)}</div>
+      </div>
+    `;
+
+    // Ledger
+    const groups = {};
+    for (const e of entries) {
+      if (!groups[e.date]) groups[e.date] = [];
+      groups[e.date].push(e);
+    }
+    const sortedDates = Object.keys(groups).sort((a, b) => a < b ? 1 : -1);
+
+    const ledgerEl = document.getElementById('ledger');
+    if (sortedDates.length === 0) {
+      ledgerEl.innerHTML = '<div class="empty-state">No entries yet. Add your first one above.</div>';
+      return;
+    }
+
+    ledgerEl.innerHTML = sortedDates.map(date => {
+      const dayEntries = groups[date];
+      const dayTotal = dayEntries.reduce((s, e) => s + (e.type === 'sale' ? e.amount : -e.amount), 0);
+      const rows = dayEntries.map(e => `
+        <div class="entry-row ${e.type === 'expense' ? 'expense' : ''}">
+          <div class="entry-note">${escapeHtml(e.note || (e.type === 'sale' ? 'Sale' : 'Expense'))}</div>
+          <div class="entry-right">
+            <span class="entry-amount ${e.type === 'sale' ? 'up' : 'down'}">${e.type === 'sale' ? '+' : '-'}${formatINR(e.amount)}</span>
+            <button class="del-btn" onclick="deleteEntry('${e.id}')" aria-label="Delete">×</button>
+          </div>
+        </div>
+      `).join('');
+
+      return `
+        <div class="day-group">
+          <div class="day-header">
+            <span class="day-label">${formatDateLabel(date)}</span>
+            <span class="day-total" style="color: ${dayTotal >= 0 ? 'var(--lime)' : 'var(--coral)'}">
+              ${dayTotal >= 0 ? '+' : '-'}${formatINR(Math.abs(dayTotal))}
+            </span>
+          </div>
+          ${rows}
+        </div>
+      `;
+    }).join('');
+  }
+
+  render();
+</script>
+
+</body>
+</html>
